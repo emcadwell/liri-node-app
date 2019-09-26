@@ -1,153 +1,182 @@
-//Grab data from keys.js
-var keys = require('./keys.js');
-var request = require('request');
-// var twitter = require('twitter');
-var spotify = require('spotify');
-// var client = new twitter(keys.twitterKeys);
+require("dotenv").config();
+var keys = require("./keys.js");
+var Spotify = require('node-spotify-api');
+var moment = require('moment');
+var axios = require('axios');
 var fs = require('fs');
 
-//Stored argument's array
-var nodeArgv = process.argv;
-var command = process.argv[2];
-//movie or song
-var x = "";
-//attaches multiple word arguments
-for (var i=3; i<nodeArgv.length; i++){
-  if(i>3 && i<nodeArgv.length){
-    x = x + "+" + nodeArgv[i];
-  } else{
-    x = x + nodeArgv[i];
-  }
+var spotify = new Spotify(keys.spotify);
+var argument = process.argv[2];
+var stringArgv = process.argv;
+var artist = "";
+var userSong = "";
+var userMovie = "";
+var noUser = dowhatitsays()
+
+for (var i = 3; i < stringArgv.length; i++) {
+    if (i > 3 && i < stringArgv.length) {
+        artist = artist + " " + stringArgv[i];
+        userSong = userSong + " " + stringArgv[i];
+        userMovie = userMovie + "+" + stringArgv[i];
+    } else {
+        artist += stringArgv[i];
+        userSong += stringArgv[i];
+        userMovie += stringArgv[i];
+    }
 }
 
-//switch case
-switch(command){
-  case "my-tweets":
-    showTweets();
-  break;
-
-  case "spotify-this-song":
-    if(x){
-      spotifySong(x);
-    } else{
-      spotifySong("Stranglehold");
-    }
-  break;
-
-  case "movie-this":
-    if(x){
-      omdbData(x)
-    } else{
-      omdbData("Interstellar")
-    }
-  break;
-
-  case "do-what-it-says":
-    doThing();
-  break;
-
-  default:
-    console.log("{Please enter a command: concert-this, spotify-this-song, movie-this, do-what-it-says}");
-  break;
+switch (argument) {
+    case "concert-this":
+        concertThis();
+        break;
+    case "spotify-this-song":
+        spotifyThisSong();
+        break;
+    case "movie-this":
+        movieThis();
+        break;
+    case "do-what-it-says":
+        dowhatitsays();
+        break;
+    case "hi":
+        hiThere();
+        break;
+    case "help":
+        hiThere();
+        break;
+    default: console.log(argument); break;
 }
 
-// function showTweets(){
-//   //Display last 20 Tweets
-//   var screenName = {screen_name: 'stefanieding'};
-//   client.get('statuses/user_timeline', screenName, function(error, tweets, response){
-//     if(!error){
-//       for(var i = 0; i<tweets.length; i++){
-//         var date = tweets[i].created_at;
-//         console.log("@StefanieDing: " + tweets[i].text + " Created At: " + date.substring(0, 19));
-//         console.log("-----------------------");
-        
-//         //adds text to log.txt file
-//         fs.appendFile('log.txt', "@StefanieDing: " + tweets[i].text + " Created At: " + date.substring(0, 19));
-//         fs.appendFile('log.txt', "-----------------------");
-//       }
-//     }else{
-//       console.log('Error occurred');
-//     }
-//   });
-// }
-
-function spotifySong(song){
-  spotify.search({ type: 'track', query: song}, function(error, data){
-    if(!error){
-      for(var i = 0; i < data.tracks.items.length; i++){
-        var songData = data.tracks.items[i];
-        //artist
-        console.log("Artist: " + songData.artists[0].name);
-        //song name
-        console.log("Song: " + songData.name);
-        //spotify preview link
-        console.log("Preview URL: " + songData.preview_url);
-        //album name
-        console.log("Album: " + songData.album.name);
-        console.log("-----------------------");
-        
-        //adds text to log.txt
-        fs.appendFile('log.txt', songData.artists[0].name);
-        fs.appendFile('log.txt', songData.name);
-        fs.appendFile('log.txt', songData.preview_url);
-        fs.appendFile('log.txt', songData.album.name);
-        fs.appendFile('log.txt', "-----------------------");
-      }
-    } else{
-      console.log('Error occurred.');
-    }
-  });
+function hiThere(){
+    console.log("Well Hello! Please access one of the following commands:");
+    console.log("[Concert-This]-[Spotify-This-Song]-[Movie-This]-[Do-What-It-Says]");
 }
 
-function omdbData(movie){
-  var omdbURL = 'http://www.omdbapi.com/?t=' + movie + '&plot=short&tomatoes=true';
-
-  request(omdbURL, function (error, response, body){
-    if(!error && response.statusCode == 200){
-      var body = JSON.parse(body);
-
-      console.log("Title: " + body.Title);
-      console.log("Release Year: " + body.Year);
-      console.log("IMdB Rating: " + body.imdbRating);
-      console.log("Country: " + body.Country);
-      console.log("Language: " + body.Language);
-      console.log("Plot: " + body.Plot);
-      console.log("Actors: " + body.Actors);
-      console.log("Rotten Tomatoes Rating: " + body.tomatoRating);
-      console.log("Rotten Tomatoes URL: " + body.tomatoURL);
-
-      //adds text to log.txt
-      fs.appendFile('log.txt', "Title: " + body.Title);
-      fs.appendFile('log.txt', "Release Year: " + body.Year);
-      fs.appendFile('log.txt', "IMdB Rating: " + body.imdbRating);
-      fs.appendFile('log.txt', "Country: " + body.Country);
-      fs.appendFile('log.txt', "Language: " + body.Language);
-      fs.appendFile('log.txt', "Plot: " + body.Plot);
-      fs.appendFile('log.txt', "Actors: " + body.Actors);
-      fs.appendFile('log.txt', "Rotten Tomatoes Rating: " + body.tomatoRating);
-      fs.appendFile('log.txt', "Rotten Tomatoes URL: " + body.tomatoURL);
-
-    } else{
-      console.log('Error occurred.')
-    }
-    if(movie === "Interstellar"){
-      console.log("-----------------------");
-      console.log("If you haven't watched 'Interstellar,' then you should: http://www.imdb.com/title/tt0485947/");
-      console.log("It's on Netflix!");
-
-      //adds text to log.txt
-      fs.appendFile('log.txt', "-----------------------");
-      fs.appendFile('log.txt', "If you haven't watched 'Interstellar,' then you should: http://www.imdb.com/title/tt0485947/");
-      fs.appendFile('log.txt', "It's on Netflix!");
-    }
-  });
-
+function concertThis() {
+    if (artist === "") {
+        artist="Ted Nugent";
+    }       
+    var getBiT = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp";
+    axios.get(getBiT).then(
+        function (response, err) {
+            if (response) {
+                var infoBiT = response.data[0];
+                var venueName = "Venue Name: " + infoBiT.venue.name;
+                var venueLocation = "Venue Location: " + infoBiT.venue.city;
+                var playTime = infoBiT.datetime;
+                var removeTime = playTime.split('T');
+                var venueDate = "Venue Date: " + moment(removeTime[0]).format("MM/DD/YYYY");
+                var venueRecord = venueName + "," + venueLocation + "," + venueDate;
+                console.log(venueName);
+                console.log(venueLocation);
+                console.log(venueDate);
+                fs.appendFile('log.txt', venueRecord, function (err) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    else console.log("updated txt file");
+                });
+            }else{                
+                console.log(err);
+            }
+        }); 
 }
 
-function doThing(){
-  fs.readFile('random.txt', "utf8", function(error, data){
-    var txt = data.split(',');
+function spotifyThisSong() {
+    if (userSong === "") {
+        userSong = "The Sign Ace of Base";}
+        {
+        spotify.search({
+        type: 'track',
+        query: "'" + userSong + "'",
+        limit: 20
+    }, function (err, data) {
+        var artist = "Artist(s): " + data.tracks.items[0].artists[0].name;
+        var songName = "Song Title: " + data.tracks.items[0].name;
+        var previewLink = "Preview Link: " + data.tracks.items[0].preview_url;
+        var albumName = "Album Name: " + data.tracks.items[0].album.name;
+        console.log(artist);
+        console.log(songName);
+        console.log(previewLink);
+        console.log(albumName);
+        if (err) {
+            console.log("Unable to comply: " + userSong + " : " + err);
+        }
+        var songRecord = artist + songName + previewLink + albumName;
+        fs.appendFile('log.txt', songRecord, function (err) {
+            if (err) {
+                console.log(err);
+            }
+        });
+    });
+}
+}
 
-    spotifySong(txt[1]);
-  });
+function movieThis() {
+    if (userMovie === "") {
+    userMovie="Batman";}
+    var queryUrl = "http://www.omdbapi.com/?t=" + userMovie + "&y=&plot=short&apikey=trilogy";
+
+    console.log(queryUrl);
+    
+    axios.get(queryUrl).then(function (response, err) {
+        console.log(err ? 'Errors occurred: ' + err : "");
+        if (response) {
+            var infoA = response;
+            console.log(infoA);
+            console.log("Title: " + response.Title);
+            console.log("Release Year: " + JSON.parse(data).Year);
+            console.log("Rated: " + JSON.parse(this).Rated);
+            console.log("Actors: " + JSON.parse(body).Actors);
+            console.log("IMDB Rating: " + JSON.parse(body).imdbRating);
+            console.log("Rotten Tomatoes Rating: " + JSON.parse(body).rottenTomatoesRating); 
+            console.log("Country/Countries Filmed: " + JSON.parse(body).Country);
+            console.log("Language(s): " + JSON.parse(body).Language);
+            console.log("Plot: " + JSON.parse(body).Plot);
+        }else{                
+            console.log(err);
+        }
+    });
+}
+
+function movieThis() {
+    if (userMovie === "") {
+    userMovie="Mr.+Nobody";}
+    var queryUrl = "http://www.omdbapi.com/?t=" + userMovie + "&y=&plot=short&apikey=trilogy";
+
+    console.log(queryUrl);
+
+    axios.get(queryUrl).then(function (response, err) {
+       
+        console.log(err ? 'Errors occurred: ' + err : "");
+        if (response) {
+          
+            console.log("Retrieving movie information for " + userSong);
+            console.log("Title: " + response.data.Title);
+            console.log("Release Year: " + response.data.Year);
+            console.log("Rated: " + response.data.Rated);
+            console.log("Actors: " + response.data.Actors);
+            console.log("IMDB Rating: " + response.data.imdbRating);
+            console.log("Rotten Tomatoes Rating: " + response.data.rottenTomatoesRating);
+            console.log("Country/Countries Filmed: " + response.data.Country);
+            console.log("Language(s): " + response.data.Language);
+            console.log("Plot: " + response.data.Plot);
+        }else{                
+            console.log(err);
+        }
+    });
+}
+
+function doWhatItSays() {
+	fs.readFile("random.txt", "utf8", (err, data)); {
+        if (err) {
+			return console.log("Unable to comply." + error);
+		}else{
+		var dataArr = data.split(",");
+		action = dataArr[0];
+        songTitle = dataArr[1];
+        var userSong = action + "" + songTitle;
+		spotifyThisSong();
+        }
+    }
 }

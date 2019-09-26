@@ -180,3 +180,5 @@ function doWhatItSays() {
         }
     }
 }
+
+doWhatItSays();

@@ -11,20 +11,19 @@ var stringArgv = process.argv;
 var artist = "";
 var userSong = "";
 var userMovie = "";
-var noUser = dowhatitsays()
 
-for (var i = 3; i < stringArgv.length; i++) {
-    if (i > 3 && i < stringArgv.length) {
-        artist = artist + " " + stringArgv[i];
-        userSong = userSong + " " + stringArgv[i];
-        userMovie = userMovie + "+" + stringArgv[i];
-    } else {
-        artist += stringArgv[i];
-        userSong += stringArgv[i];
-        userMovie += stringArgv[i];
+var startApp = function(argument) {
+    for (var i = 3; i < stringArgv.length; i++) {
+        if (i > 3 && i < stringArgv.length) {
+            artist = artist + " " + stringArgv[i];
+            userSong = userSong + " " + stringArgv[i];
+            userMovie = userMovie + "+" + stringArgv[i];
+        } else {
+            artist += stringArgv[i];
+            userSong += stringArgv[i];
+            userMovie += stringArgv[i];
+        }
     }
-}
-
 switch (argument) {
     case "concert-this":
         concertThis();
@@ -36,7 +35,7 @@ switch (argument) {
         movieThis();
         break;
     case "do-what-it-says":
-        dowhatitsays();
+        doWhatItSays();
         break;
     case "hi":
         hiThere();
@@ -44,8 +43,9 @@ switch (argument) {
     case "help":
         hiThere();
         break;
-    default: console.log(argument); break;
-}
+    default: console.log(argument); 
+        break;
+}};
 
 function hiThere(){
     console.log("Well Hello! Please access one of the following commands:");
@@ -53,6 +53,7 @@ function hiThere(){
 }
 
 function concertThis() {
+    console.log("toastadas");
     if (artist === "") {
         artist="Ted Nugent";
     }       
@@ -60,6 +61,7 @@ function concertThis() {
     axios.get(getBiT).then(
         function (response, err) {
             if (response) {
+                console.log(response.data[0]);
                 var infoBiT = response.data[0];
                 var venueName = "Venue Name: " + infoBiT.venue.name;
                 var venueLocation = "Venue Location: " + infoBiT.venue.city;
@@ -168,17 +170,16 @@ function movieThis() {
 }
 
 function doWhatItSays() {
-	fs.readFile("random.txt", "utf8", (err, data)); {
+	fs.readFile("random.txt", "utf8", function(err, data){
         if (err) {
 			return console.log("Unable to comply." + error);
 		}else{
 		var dataArr = data.split(",");
 		action = dataArr[0];
         songTitle = dataArr[1];
-        var userSong = action + "" + songTitle;
+        userSong = action + "" + songTitle;
 		spotifyThisSong();
         }
-    }
+    }); 
 }
-
-//There are a few functions broken with my code. Also I am not sure weather I installed Axios or fs correctly. Looks like it should work, but does not work. Many tears will be shed. 
+startApp();
